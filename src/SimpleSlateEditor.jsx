@@ -10,11 +10,12 @@ const ConElement = ({ attributes, children, element }) => {
   switch (element.type) {
     case 'blockquote':
       return <blockquote {...attributes}>{children}</blockquote>;
-    case 'paragraph':
-      return <p {...attributes}>{children}</p>;
+    // case 'paragraph':
+    //   return <p {...attributes}>{children}</p>;
     case 'heading':
       return <h1 {...attributes}>{children}</h1>; 
-    default:
+    case 'paragraph':
+      default:
       return <p {...attributes}>{children}</p>;
   }
 };
@@ -26,6 +27,7 @@ const BlockButton = ({ format, editor }) => {
   const isBlockActive = (editor, format) => {
   const [match] = Editor.nodes(editor, {
     match: (n) => n.type === format,
+    mode: "all",
   });
   return !!match;
   };
@@ -34,7 +36,8 @@ const BlockButton = ({ format, editor }) => {
   const toggleBlock = (editor, format) => {
     const isActive = isBlockActive(editor, format);
     
-    //  if (!editor.selection) { console.log("empty selection"); return;}
+     // eslint-disable-next-line react/prop-types
+     if (!editor.selection) { console.log("invalid selection"); return;}
 
     Transforms.setNodes(
       editor,
@@ -47,7 +50,8 @@ const BlockButton = ({ format, editor }) => {
         // },
         // eslint-disable-next-line react/prop-types
         at: editor.selection,
-        match: n => Editor.isBlock(editor, n),
+        //.isBlock distinguish codeBlock 
+        // match: n => Editor.isBlock(editor, n),   
         split: true,
       }
     );
@@ -63,10 +67,6 @@ const BlockButton = ({ format, editor }) => {
       onClick={() =>
         toggleBlock(editor, format)
       }
-      // onClick={(event) => {
-      //   event.preventDefault(); // Prevent default focus behavior
-      //   toggleBlock(editor, format);
-      // }} 
     >
       {format}
     </button>
@@ -78,11 +78,10 @@ const SimpleSlateEditor = () => {
   
   const editor = useMemo(() => withReact(createEditor()), []);
  
- 
   const [value, setValue] = useState([
     {
-      type: 'heading',
-      children: [{ text: 'A line of text in a heading.'
+      type: 'paragraph',
+      children: [{ text: 'A line of text in a paragraph.'
       }],
     }
   ]);
@@ -90,8 +89,9 @@ const SimpleSlateEditor = () => {
   return (
     <Slate editor={editor} initialValue={value} 
       onChange={(newValue) => {
-        console.log('change', newValue)
-        setValue(newValue)
+        if (newValue !== value){
+        setValue(newValue);
+        console.log('change', newValue);}
       }}
     >
       <div>
